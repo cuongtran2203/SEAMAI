@@ -1,7 +1,6 @@
 import sys
 import time
 
-sys.path.append('../')
 import torch
 from torch import nn
 import numpy as np
@@ -278,10 +277,10 @@ if __name__ == "__main__":
         print(t1-t0)
 
 
-    list_flops_backbone = Utils.calculate_flops(list(model.feed_forward))
-    list_flops_backbone_2 = np.sum(Utils.calculate_flops(list(model.children()))) - np.sum(list_flops_backbone)
-    list_flops_backbone = list(map(lambda x: np.sum([x, list_flops_backbone_2]), list_flops_backbone))
-    print(list_flops_backbone)
+    # list_flops_backbone = Utils.calculate_flops(list(model.feed_forward))
+    # list_flops_backbone_2 = np.sum(Utils.calculate_flops(list(model.children()))) - np.sum(list_flops_backbone)
+    # list_flops_backbone = list(map(lambda x: np.sum([x, list_flops_backbone_2]), list_flops_backbone))
+    # print(list_flops_backbone)
     size_model = 0
     for param in model.parameters():
         if param.data.is_floating_point():

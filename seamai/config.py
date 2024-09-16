@@ -1,5 +1,6 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 import sys,os
+import torch
 sys.path.append('../')
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tracker = True # Record the results and model for each update epoch
@@ -23,7 +24,7 @@ set_bw = {c:v for (c,v) in zip(list(SOURCE_ADDR.values()), [
 # Do not change the the gpu/cpu (we fixed)
 set_devices = {c:v for (c,v) in zip(list(SOURCE_ADDR.values()), [
     'cuda','cuda','cpu','cpu','cpu',
-                                                              ])}
+                                                        ])}
 # Participant can be changed these value if you want)
 iters = {c:v for (c,v) in zip(list(SOURCE_ADDR.values()), [
     5,5,10,15,15,
