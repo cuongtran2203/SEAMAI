@@ -16,227 +16,227 @@ logger = logging.getLogger(__name__)
 sys.path.append('../')
 
 import config as cfg
-from models.s3d import S3D
-from models.hbco import HBCO
-from models.tfe import TransformerEncoder_CLIENT as TFE_C
-from models.tfe import TransformerEncoder_SERVER as TFE_S
-from models.tfe import TransformerEncoder_UNIT as TFE_U
-from dataset.dataloader import NEARMISS
-from dataset.transformation.videotransforms import *
-from dataset.transformation.my_transform import *
-import dataset.transformation.my_transform as T
+# from models.s3d import S3D
+# from ..models.hbco import HBCO
+# from ..models.tfe import TransformerEncoder_CLIENT as TFE_C
+# from ..models.tfe import TransformerEncoder_SERVER as TFE_S
+# from ..models.tfe import TransformerEncoder_UNIT as TFE_U
+# from dataset.dataloader import NEARMISS
+# from dataset.transformation.videotransforms import *
+# from dataset.transformation.my_transform import *
+# import dataset.transformation.my_transform as T
 
 # Set random seeds for reproducibility
 np.random.seed(cfg.random_seed)
 torch.manual_seed(cfg.random_seed)
 
 
-class Party:
-    def __init__(self, name):
-        super(Party, self).__init__()
-        self.name = name
+# class Party:
+#     def __init__(self, name):
+#         super(Party, self).__init__()
+#         self.name = name
 
-        # Check if GPU is available, otherwise use CPU
-        if torch.cuda.is_available():
-            logger.info(torch.cuda.get_device_name(0))
-            self.device = 'cuda'
-        else:
-            self.device = 'cpu'
+#         # Check if GPU is available, otherwise use CPU
+#         if torch.cuda.is_available():
+#             logger.info(torch.cuda.get_device_name(0))
+#             self.device = 'cuda'
+#         else:
+#             self.device = 'cpu'
 
-        # Initialize dataloaders and datasets for train, val, test
-        self.dataloaders = {'train': None, 'val': None, 'test': None}
-        self.datasets = {'train': None, 'val': None, 'test': None}
-        self._training_sizes = {'train': 0, 'val': 0, 'test': 0}
+#         # Initialize dataloaders and datasets for train, val, test
+#         self.dataloaders = {'train': None, 'val': None, 'test': None}
+#         self.datasets = {'train': None, 'val': None, 'test': None}
+#         self._training_sizes = {'train': 0, 'val': 0, 'test': 0}
 
-    # Placeholder for loading data
-    def load_data(self):
-        pass
+#     # Placeholder for loading data
+#     def load_data(self):
+#         pass
 
-    # Placeholder for setting training size
-    def set_training_size(self, training_size=cfg.training_size):
-        pass
+#     # Placeholder for setting training size
+#     def set_training_size(self, training_size=cfg.training_size):
+#         pass
 
-    # Placeholder for getting model
-    def get_model(self, model_name, split_layer=0):
-        pass
+#     # Placeholder for getting model
+#     def get_model(self, model_name, split_layer=0):
+#         pass
 
-    # Get the size of the training dataset
-    def get_train_data_size(self):
-        return self._training_sizes['train']
+#     # Get the size of the training dataset
+#     def get_train_data_size(self):
+#         return self._training_sizes['train']
 
-    # Get the size of the validation dataset
-    def get_val_data_size(self):
-        return self._training_sizes['val']
+#     # Get the size of the validation dataset
+#     def get_val_data_size(self):
+#         return self._training_sizes['val']
 
-    # Get the size of the test dataset
-    def get_test_data_size(self):
-        return self._training_sizes['test']
+#     # Get the size of the test dataset
+#     def get_test_data_size(self):
+#         return self._training_sizes['test']
 
-    # Get the training dataset
-    def get_train_data(self):
-        return self.datasets['train']
+#     # Get the training dataset
+#     def get_train_data(self):
+#         return self.datasets['train']
 
-    # Get the validation dataset
-    def get_val_data(self):
-        return self.datasets['val']
+#     # Get the validation dataset
+#     def get_val_data(self):
+#         return self.datasets['val']
 
-    # Get the test dataset
-    def get_test_data(self):
-        return self.datasets['test']
+#     # Get the test dataset
+#     def get_test_data(self):
+#         return self.datasets['test']
 
-    # Get the training dataloader
-    def get_train_dataloader(self):
-        return self.dataloaders['train']
+#     # Get the training dataloader
+#     def get_train_dataloader(self):
+#         return self.dataloaders['train']
 
-    # Get the validation dataloader
-    def get_val_dataloader(self):
-        return self.dataloaders['val']
+#     # Get the validation dataloader
+#     def get_val_dataloader(self):
+#         return self.dataloaders['val']
 
-    # Get the test dataloader
-    def get_test_dataloader(self):
-        return self.dataloaders['test']
+#     # Get the test dataloader
+#     def get_test_dataloader(self):
+#         return self.dataloaders['test']
 
 
-class NMParty(Party):
+# class NMParty(Party):
 
-    def __init__(self, name):
-        super(NMParty, self).__init__(name)
-        # Initialize configuration parameters
-        self.random_seed = cfg.random_seed
-        self.num_devices = cfg.num_devices
-        self.num_group = cfg.num_group
-        self.num_classes = cfg.num_classes
-        self.num_layers = cfg.num_layers
-        self.num_frames = cfg.num_frames
-        self.num_rounds = cfg.num_rounds
-        self.num_epochs = cfg.num_epochs
-        self.num_head = cfg.num_head
-        self.batch_size = cfg.batch_size
-        self.image_size = cfg.image_size
-        self.model_size = cfg.model_size
-        self.cluster = cfg.cluster
-        self.learning_rate = cfg.learning_rate
-        self.iters = cfg.iters
-        self.offload = cfg.offload
-        self.model_name = cfg.model_name
-        self.temperature = cfg.temperature
-        self.in_channels = cfg.in_channels
-        self.out_channels = cfg.out_channels
-        self.embed_dim = cfg.embed_dim
-        self.threshold = cfg.threshold
-        self.slide = cfg.slide
-        self.root_dada = cfg.root_dada
-        self.root_dada_json = cfg.root_dada_json
-        self.TRAINED_FOLDER_STORAGE = cfg.TRAINED_FOLDER_STORAGE
+#     def __init__(self, name):
+#         super(NMParty, self).__init__(name)
+#         # Initialize configuration parameters
+#         self.random_seed = cfg.random_seed
+#         self.num_devices = cfg.num_devices
+#         self.num_group = cfg.num_group
+#         self.num_classes = cfg.num_classes
+#         self.num_layers = cfg.num_layers
+#         self.num_frames = cfg.num_frames
+#         self.num_rounds = cfg.num_rounds
+#         self.num_epochs = cfg.num_epochs
+#         self.num_head = cfg.num_head
+#         self.batch_size = cfg.batch_size
+#         self.image_size = cfg.image_size
+#         self.model_size = cfg.model_size
+#         self.cluster = cfg.cluster
+#         self.learning_rate = cfg.learning_rate
+#         self.iters = cfg.iters
+#         self.offload = cfg.offload
+#         self.model_name = cfg.model_name
+#         self.temperature = cfg.temperature
+#         self.in_channels = cfg.in_channels
+#         self.out_channels = cfg.out_channels
+#         self.embed_dim = cfg.embed_dim
+#         self.threshold = cfg.threshold
+#         self.slide = cfg.slide
+#         self.root_dada = cfg.root_dada
+#         self.root_dada_json = cfg.root_dada_json
+#         self.TRAINED_FOLDER_STORAGE = cfg.TRAINED_FOLDER_STORAGE
 
-        # Initialize models
-        self.V_uninet = self.get_model(model_name=self.model_name[0])
-        self.A_uninet = self.get_model(model_name=self.model_name[1])
-        self.M_uninet = self.get_model(model_name=self.model_name[2])
+#         # Initialize models
+#         self.V_uninet = self.get_model(model_name=self.model_name[0])
+#         self.A_uninet = self.get_model(model_name=self.model_name[1])
+#         self.M_uninet = self.get_model(model_name=self.model_name[2])
 
-    # Load data and apply transformations
-    def load_data(self):
-        train_transforms = T.create_video_transform(input_size=self.image_size, is_training=True, distortion=0.5,
-                                                    hflip=0.5, color_jitter=None)
-        val_transforms = T.create_video_transform(input_size=self.image_size, is_training=False)
+#     # Load data and apply transformations
+#     def load_data(self):
+#         train_transforms = T.create_video_transform(input_size=self.image_size, is_training=True, distortion=0.5,
+#                                                     hflip=0.5, color_jitter=None)
+#         val_transforms = T.create_video_transform(input_size=self.image_size, is_training=False)
 
-        train_transforms_compress = [train_transforms, Tr.Compose([
-            Tr.RandomHorizontalFlip(1),
-            Tr.RandomErasing(1),
-            Tr.RandomVerticalFlip(1),
-            Tr.RandomRotation(30),
-            Tr.GaussianBlur(1)
-        ])]
+#         train_transforms_compress = [train_transforms, Tr.Compose([
+#             Tr.RandomHorizontalFlip(1),
+#             Tr.RandomErasing(1),
+#             Tr.RandomVerticalFlip(1),
+#             Tr.RandomRotation(30),
+#             Tr.GaussianBlur(1)
+#         ])]
 
-        val_transforms_compress = [val_transforms, None]
+#         val_transforms_compress = [val_transforms, None]
 
-        train_dataset = NEARMISS(
-            annotate_file=[self.root_dada_json],
-            root=[self.root_dada],
-            data_type='training',
-            num_frames=self.num_frames,
-            transforms=train_transforms_compress,
-            size=self.image_size,
-            num_classes=self.num_classes,
-            device=self.device
-        )
+#         train_dataset = NEARMISS(
+#             annotate_file=[self.root_dada_json],
+#             root=[self.root_dada],
+#             data_type='training',
+#             num_frames=self.num_frames,
+#             transforms=train_transforms_compress,
+#             size=self.image_size,
+#             num_classes=self.num_classes,
+#             device=self.device
+#         )
 
-        val_dataset = NEARMISS(
-            annotate_file=[self.root_dada_json],
-            root=[self.root_dada],
-            data_type='validating',
-            num_frames=self.num_frames,
-            transforms=val_transforms_compress,
-            size=self.image_size,
-            num_classes=self.num_classes,
-            device=self.device
-        )
+#         val_dataset = NEARMISS(
+#             annotate_file=[self.root_dada_json],
+#             root=[self.root_dada],
+#             data_type='validating',
+#             num_frames=self.num_frames,
+#             transforms=val_transforms_compress,
+#             size=self.image_size,
+#             num_classes=self.num_classes,
+#             device=self.device
+#         )
 
-        test_dataset = NEARMISS(
-            annotate_file=[self.root_dada_json],
-            root=[self.root_dada],
-            data_type='testing',
-            num_frames=self.num_frames,
-            transforms=val_transforms_compress,
-            size=self.image_size,
-            num_classes=self.num_classes,
-            device=self.device
-        )
+#         test_dataset = NEARMISS(
+#             annotate_file=[self.root_dada_json],
+#             root=[self.root_dada],
+#             data_type='testing',
+#             num_frames=self.num_frames,
+#             transforms=val_transforms_compress,
+#             size=self.image_size,
+#             num_classes=self.num_classes,
+#             device=self.device
+#         )
 
-        train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
-        test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
+#         train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+#         val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
+#         test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
 
-        self.dataloaders = {'train': train_dataloader, 'val': val_dataloader, 'test': test_dataloader}
-        self.datasets = {'train': train_dataset, 'val': val_dataset, 'test': test_dataset}
-        self._training_sizes = {'train': len(self.datasets['train']), 'val': len(self.datasets['val']),
-                                'test': len(self.datasets['test'])}
+#         self.dataloaders = {'train': train_dataloader, 'val': val_dataloader, 'test': test_dataloader}
+#         self.datasets = {'train': train_dataset, 'val': val_dataset, 'test': test_dataset}
+#         self._training_sizes = {'train': len(self.datasets['train']), 'val': len(self.datasets['val']),
+#                                 'test': len(self.datasets['test'])}
 
-    # Set the size of training, validation, and test datasets
-    def set_training_size(self, training_size=cfg.training_size):
-        self._training_sizes = {
-            'train': int(float(min(training_size['train'], len(self.datasets['train']))) / self.batch_size),
-            'val': int(float(min(training_size['val'], len(self.datasets['val']))) / self.batch_size),
-            'test': int(float(min(training_size['test'], len(self.datasets['test']))) / self.batch_size)
-        }
-        logger.info(self._training_sizes)
+#     # Set the size of training, validation, and test datasets
+#     def set_training_size(self, training_size=cfg.training_size):
+#         self._training_sizes = {
+#             'train': int(float(min(training_size['train'], len(self.datasets['train']))) / self.batch_size),
+#             'val': int(float(min(training_size['val'], len(self.datasets['val']))) / self.batch_size),
+#             'test': int(float(min(training_size['test'], len(self.datasets['test']))) / self.batch_size)
+#         }
+#         logger.info(self._training_sizes)
 
-    # Get the model based on the location and model name
-    def get_model(self, location='unit', model_name='', split_layer=0):
-        if model_name == 'tfe':
-            if location == 'unit':
-                model = TFE_U(
-                    split_layer=split_layer,
-                    num_layers=self.num_layers,
-                    embed_dim=self.embed_dim,
-                    num_heads=self.num_frames,
-                    num_classes=self.num_classes
-                )
-            if location == 'client':
-                model = TFE_C(
-                    split_layer=split_layer,
-                    num_layers=self.num_layers,
-                    embed_dim=self.embed_dim,
-                    num_heads=self.num_frames,
-                    num_classes=self.num_classes
-                )
-            if location == 'server':
-                model = TFE_S(
-                    split_layer=split_layer,
-                    num_layers=self.num_layers,
-                    embed_dim=self.embed_dim,
-                    num_heads=self.num_frames,
-                    num_classes=self.num_classes
-                )
+#     # Get the model based on the location and model name
+#     def get_model(self, location='unit', model_name='', split_layer=0):
+#         if model_name == 'tfe':
+#             if location == 'unit':
+#                 model = TFE_U(
+#                     split_layer=split_layer,
+#                     num_layers=self.num_layers,
+#                     embed_dim=self.embed_dim,
+#                     num_heads=self.num_frames,
+#                     num_classes=self.num_classes
+#                 )
+#             if location == 'client':
+#                 model = TFE_C(
+#                     split_layer=split_layer,
+#                     num_layers=self.num_layers,
+#                     embed_dim=self.embed_dim,
+#                     num_heads=self.num_frames,
+#                     num_classes=self.num_classes
+#                 )
+#             if location == 'server':
+#                 model = TFE_S(
+#                     split_layer=split_layer,
+#                     num_layers=self.num_layers,
+#                     embed_dim=self.embed_dim,
+#                     num_heads=self.num_frames,
+#                     num_classes=self.num_classes
+#                 )
 
-        elif model_name == 'hbco':
-            model = HBCO(in_channels=self.num_frames, out_channels=self.embed_dim)
+#         elif model_name == 'hbco':
+#             model = HBCO(in_channels=self.num_frames, out_channels=self.embed_dim)
 
-        elif model_name == 's3d':
-            model = S3D(num_classes=self.embed_dim)
+#         elif model_name == 's3d':
+#             model = S3D(num_classes=self.embed_dim)
 
-        logger.debug(str(model))
-        return model.to(self.device)
+#         logger.debug(str(model))
+#         return model.to(self.device)
 
 
 # Create NMParty object, load data, and set training size

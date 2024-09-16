@@ -6,7 +6,7 @@ from torch import nn
 import numpy as np
 import  math
 from torchinfo import summary as model_summary
-from events import Utils
+# from events import Utils
 class MultiHeadAttention(nn.Module):
     def __init__(self,d_model, num_heads=16):
         super(MultiHeadAttention, self).__init__()
@@ -253,39 +253,39 @@ class TransformerEncoder_SERVER(nn.Module):
         return self.fc_out(norm2_out)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    vids = torch.ones([1,768])
-    hbco = torch.ones([1,768])
-    num_layers = 10
+#     vids = torch.ones([1,768])
+#     hbco = torch.ones([1,768])
+#     num_layers = 10
 
-    model = TransformerEncoder_UNIT(embed_dim=768, num_layers=num_layers, num_heads=16)
-    model_summary(model)
-    for i in range(num_layers):
-        split_layer =i
-        client = TransformerEncoder_CLIENT(embed_dim=768, num_layers=num_layers, num_heads=16,split_layer=split_layer)
-        server = TransformerEncoder_SERVER(embed_dim=768, num_layers=num_layers, num_heads=16,split_layer=split_layer)
+#     model = TransformerEncoder_UNIT(embed_dim=768, num_layers=num_layers, num_heads=16)
+#     model_summary(model)
+#     for i in range(num_layers):
+#         split_layer =i
+#         client = TransformerEncoder_CLIENT(embed_dim=768, num_layers=num_layers, num_heads=16,split_layer=split_layer)
+#         server = TransformerEncoder_SERVER(embed_dim=768, num_layers=num_layers, num_heads=16,split_layer=split_layer)
 
-        # model_summary(client)
-        # model_summary(server)
+#         # model_summary(client)
+#         # model_summary(server)
 
-        t0 =time.time()
-        out = client([hbco, hbco, vids])
-        print(out[0].shape)
-        prediction = server(out)
-        t1=time.time()
-        print(t1-t0)
+#         t0 =time.time()
+#         out = client([hbco, hbco, vids])
+#         print(out[0].shape)
+#         prediction = server(out)
+#         t1=time.time()
+#         print(t1-t0)
 
 
-    # list_flops_backbone = Utils.calculate_flops(list(model.feed_forward))
-    # list_flops_backbone_2 = np.sum(Utils.calculate_flops(list(model.children()))) - np.sum(list_flops_backbone)
-    # list_flops_backbone = list(map(lambda x: np.sum([x, list_flops_backbone_2]), list_flops_backbone))
-    # print(list_flops_backbone)
-    size_model = 0
-    for param in model.parameters():
-        if param.data.is_floating_point():
-            size_model += param.numel() * torch.finfo(param.data.dtype).bits
-        else:
-            size_model += param.numel() * torch.iinfo(param.data.dtype).bits
+#     # list_flops_backbone = Utils.calculate_flops(list(model.feed_forward))
+#     # list_flops_backbone_2 = np.sum(Utils.calculate_flops(list(model.children()))) - np.sum(list_flops_backbone)
+#     # list_flops_backbone = list(map(lambda x: np.sum([x, list_flops_backbone_2]), list_flops_backbone))
+#     # print(list_flops_backbone)
+#     size_model = 0
+#     for param in model.parameters():
+#         if param.data.is_floating_point():
+#             size_model += param.numel() * torch.finfo(param.data.dtype).bits
+#         else:
+#             size_model += param.numel() * torch.iinfo(param.data.dtype).bits
 
-    print(f"model size: {size_model} / bit | {size_model / 8e6:.2f} / MB")
+#     print(f"model size: {size_model} / bit | {size_model / 8e6:.2f} / MB")

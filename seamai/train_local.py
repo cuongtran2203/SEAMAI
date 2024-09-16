@@ -33,7 +33,6 @@ from torch.autograd import Variable
 from torchmetrics import Accuracy
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import MinMaxScale
 
 '''
 Define dataloader
@@ -128,20 +127,20 @@ class MM_sensing():
         self.root_dada_json = cfg.root_dada_json
         self.TRAINED_FOLDER_STORAGE = cfg.TRAINED_FOLDER_STORAGE
         self.device = device
-
+        
         # Initialize models
         self.V_uninet = self.get_model(model_name=self.model_name[0])
         self.A_uninet = self.get_model(model_name=self.model_name[1])
         # self.M_uninet = self.get_model(model_name=self.model_name[2])
         self.fea =TFE_C(
-                    split_layer=split_layer,
+                    split_layer=0,
                     num_layers=self.num_layers,
                     embed_dim=self.embed_dim,
                     num_heads=self.num_frames,
                     num_classes=self.num_classes
                 )
-        self.combine =  model = TFE_S(
-                    split_layer=split_layer,
+        self.combine = TFE_S(
+                    split_layer=0,
                     num_layers=self.num_layers,
                     embed_dim=self.embed_dim,
                     num_heads=self.num_frames,
@@ -151,10 +150,9 @@ class MM_sensing():
         self.criterion_1 = nn.L1Loss().to(self.device)
         self.criterion_2 = nn.BCELoss().to(self.device)
         self.metric = Accuracy(task="binary").to(self.device)
-        self.optimizers = {c: torch.optim.Adam(list(self.A_uninet.parameters()) + list(self.nets[c].parameters()),
-                                               lr=self.Party.learning_rate) for c in self.client_socks}
-        self.lr_scheds = {c: torch.optim.lr_scheduler.MultiStepLR(self.optimizers[c], [50, 100]) for c in
-                          self.client_socks}
+        self.optimizers =torch.optim.Adam(list(self.A_uninet.parameters()),
+                                               lr=self.learning_rate)
+        self.lr_scheds = torch.optim.lr_scheduler.MultiStepLR(self.optimizers, [50, 100])
     
         # Get the model based on the location and model name
     def get_model(self, location='unit', model_name='', split_layer=0):

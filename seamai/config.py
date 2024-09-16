@@ -47,7 +47,7 @@ num_layers = 10                           # number of TransformerEncoder  (multi
 # Hyper-parameter
 num_rounds = 100
 num_epochs = 1
-batch_size = 1
+batch_size = 2
 learning_rate = 0.01
 
 ## V - video
